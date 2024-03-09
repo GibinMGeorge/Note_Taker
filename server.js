@@ -1,48 +1,75 @@
-// Import required modules
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
 
-// Create an instance of Express
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware for parsing JSON and URL encoded data
+// Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.static('public'));
 
 // Routes
-
-// Route to serve the landing page
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Route to serve the notes page
 app.get('/notes', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'notes.html'));
 });
 
-// Route to handle API requests for retrieving existing notes
 app.get('/api/notes', (req, res) => {
-  // Read notes from file and send as response
+  fs.readFile(path.join(__dirname, 'db', 'db.json'), 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Failed to read notes from the database.' });
+    }
+    const notes = JSON.parse(data);
+    res.json(notes);
+  });
 });
 
-// Route to handle API requests for saving new notes
 app.post('/api/notes', (req, res) => {
-  // Read existing notes from file
-  // Add new note to the list
-  // Write updated notes to file
+  const newNote = req.body;
+  fs.readFile(path.join(__dirname, 'db', 'db.json'), 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Failed to read notes from the database.' });
+    }
+    const notes = JSON.parse(data);
+    newNote.id = notes.length + 1;
+    notes.push(newNote);
+    fs.writeFile(path.join(__dirname, 'db', 'db.json'), JSON.stringify(notes, null, 2), err => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Failed to save note to the database.' });
+      }
+      res.json(newNote);
+    });
+  });
 });
 
-// Route to handle API requests for deleting notes
 app.delete('/api/notes/:id', (req, res) => {
-  // Read existing notes from file
-  // Remove the note with the specified id
-  // Write updated notes to file
+  const id = parseInt(req.params.id);
+  fs.readFile(path.join(__dirname, 'db', 'db.json'), 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Failed to read notes from the database.' });
+    }
+    let notes = JSON.parse(data);
+    notes = notes.filter(note => note.id !== id);
+    fs.writeFile(path.join(__dirname, 'db', 'db.json'), JSON.stringify(notes, null, 2), err => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Failed to delete note from the database.' });
+      }
+      res.status(204).send();
+    });
+  });
 });
 
-// Start the server
+// Start server
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
