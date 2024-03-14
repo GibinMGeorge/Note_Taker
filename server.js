@@ -11,13 +11,19 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Routes
+// route to serve the index.html file
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// route to serve the notes.html file
+
 app.get('/notes', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'notes.html'));
 });
+
+// handle api request to get notes
 
 app.get('/api/notes', (req, res) => {
   fs.readFile(path.join(__dirname, 'db', 'db.json'), 'utf8', (err, data) => {
@@ -29,6 +35,8 @@ app.get('/api/notes', (req, res) => {
     res.json(notes);
   });
 });
+
+// route to handle API requests to save notes
 
 app.post('/api/notes', (req, res) => {
   const newNote = req.body;
@@ -49,6 +57,8 @@ app.post('/api/notes', (req, res) => {
     });
   });
 });
+
+// route to handle API requests to delete notes
 
 app.delete('/api/notes/:id', (req, res) => {
   const id = parseInt(req.params.id);
