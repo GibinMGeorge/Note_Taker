@@ -29,7 +29,11 @@ run the express server
 
 use the local host link to run the application.
 
+## Usage
+
+![screen ](S1.gif)
+
 
 * The URL of the GitHub repository - https://github.com/GibinMGeorge/Note_Taker
 
-* The URL of the Deployed Application - http://localhost:3000
+* The URL of the Deployed Application - 
